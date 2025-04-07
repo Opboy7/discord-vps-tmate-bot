@@ -31,24 +31,20 @@ client.once('ready', () => {
 });
 
 client.on('interactionCreate', async interaction => {
-  if (!interaction.isChatInputCommand()) return;
+  if (!interaction.isChatInputCommaconst output = execSync('./deploy_tmate.sh').toString();
+
+// Filter only lines with SSH or web link
+const sessionLines = output.split('\n').filter(line =>
+  line.includes('ssh') || line.includes('https://')
+).join('\n');
+
+// Fallback message if session info not found
+const finalOutput = sessionLines || 'Tmate session started, but no session string was detected.';
+
+await interaction.editReply(`Tmate session ready:\n\`\`\`\n${finalOutput}\n\`\`\``);
+nd()) return;
 
   if (interaction.commandName === 'deploy-vps') {
     await interaction.reply('Deploying VPS with Tmate...');
     try {
-      const output = execSync('./deploy_tmate.sh');
-      const session = output.toString().trim();
-
-      if (session.includes('ssh')) {
-        await interaction.editReply(`Tmate session ready:\n\`${session}\``);
-      } else {
-        await interaction.editReply(`Something went wrong:\n${session}`);
-      }
-    } catch (err) {
-      console.error(err);
-      await interaction.editReply('Failed to deploy Tmate VPS.');
-    }
-  }
-});
-
-client.login(process.env.DISCORD_TOKEN);
+      
