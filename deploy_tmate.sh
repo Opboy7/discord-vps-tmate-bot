@@ -1,12 +1,16 @@
 #!/bin/bash
 
-set -e
+# Stop and remove existing container if it exists
+if [ "$(docker ps -a -q -f name=tmate-container)" ]; then
+    docker rm -f tmate-container
+fi
 
-docker run -d --rm --name tmate-container ubuntu sleep infinity
+# Start a new tmate container
+docker run -d --name tmate-container alpine \
+    sh -c "apk add --no-cache tmate openssh && tmate -F" > /dev/null
 
-docker exec -i tmate-container apt update -y
-docker exec -i tmate-container apt install -y tmate openssh-client
+# Wait for the container to be fully initialized
+sleep 3
 
-SESSION=$(docker exec -i tmate-container tmate -S /tmp/tmate.sock new-session -d && sleep 2 && docker exec -i tmate-container tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}')
-
-echo "$SESSION"
+# Get the SSH connection string
+docker exec tmate-container tmate display -p '#{tmate_ssh}'
